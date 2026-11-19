@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YoRHa Task Planner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="scanlines" aria-hidden="true"></div>
+  <div class="app-shell">
+    <header class="app-header">
+      <div class="header-top">
+        <span class="unit-label">YoRHa Tactical Support Unit</span>
+        <span class="status-indicator"><span class="dot"></span> SYSTEM ONLINE</span>
+      </div>
+      <h1 class="title">TASK PLANNER</h1>
+      <p class="subtitle">Glory to Mankind // Mission Directive Ledger</p>
+      <div class="divider"><span class="diamond"></span></div>
+    </header>
+
+    <main class="dashboard">
+      <section class="panel tasks-panel" aria-label="Task planner">
+        <div class="panel-heading">
+          <h2 class="panel-title">Directive Registry</h2>
+          <span class="panel-tag">OPS / TASK NET</span>
+        </div>
+
+        <section class="composer" aria-label="Create task">
+          <form id="task-form" autocomplete="off">
+            <label class="sr-only" for="task-input">New task</label>
+            <div class="composer-grid">
+              <div class="input-wrap">
+                <span class="input-prefix">◈</span>
+                <input id="task-input" name="task" type="text" maxlength="140" placeholder="Enter new mission directive..." required />
+              </div>
+              <div class="date-wrap">
+                <label class="sr-only" for="task-due">Due date</label>
+                <input id="task-due" name="due" type="date" aria-label="Due date" />
+              </div>
+              <button type="submit" class="btn primary">REGISTER</button>
+            </div>
+          </form>
+        </section>
+
+        <section class="controls" aria-label="Task controls">
+          <div class="search-row">
+            <div class="input-wrap search-wrap">
+              <span class="input-prefix">⌕</span>
+              <input id="search-input" type="search" placeholder="Search directives and sub-directives..." aria-label="Search tasks" />
+            </div>
+            <button id="clear-filters" class="btn ghost small" type="button">CLEAR FILTERS</button>
+          </div>
+
+          <div class="filters-block">
+            <div class="filters" role="tablist" aria-label="Status filters">
+              <button class="filter-btn active" data-filter="all" role="tab" aria-selected="true">ALL</button>
+              <button class="filter-btn" data-filter="active" role="tab" aria-selected="false">ACTIVE</button>
+              <button class="filter-btn" data-filter="completed" role="tab" aria-selected="false">COMPLETED</button>
+            </div>
+            <div class="advanced-filters" aria-label="Advanced filters">
+              <button class="chip-btn" data-adv="overdue" type="button" aria-pressed="false">OVERDUE</button>
+              <button class="chip-btn" data-adv="today" type="button" aria-pressed="false">DUE TODAY</button>
+              <button class="chip-btn" data-adv="hasSubtasks" type="button" aria-pressed="false">HAS SUBTASKS</button>
+              <button class="chip-btn" data-adv="noDueDate" type="button" aria-pressed="false">NO DUE DATE</button>
+            </div>
+          </div>
+
+          <div class="meta">
+            <span id="task-count">0 directives remaining</span>
+            <button id="clear-completed" class="btn ghost" type="button">PURGE COMPLETED</button>
+          </div>
+        </section>
+
+        <div id="active-date-filter" class="active-date-filter" hidden>
+          <span id="active-date-label"></span>
+          <button id="clear-date-filter" class="btn ghost small" type="button">CLEAR DATE</button>
+        </div>
+
+        <section class="task-section" aria-label="Task list">
+          <ul id="task-list" class="task-list"></ul>
+          <div id="empty-state" class="empty-state" hidden>
+            <div class="empty-frame">
+              <p class="empty-title">NO DIRECTIVES LOGGED</p>
+              <p class="empty-sub">Awaiting mission parameters from command.</p>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <aside class="panel side-panel" aria-label="Calendar and overview">
+        <div class="panel-heading">
+          <h2 class="panel-title">Mission Calendar</h2>
+          <span class="panel-tag">TEMPORAL MAP</span>
+        </div>
+
+        <section class="calendar" aria-label="Calendar">
+          <div class="calendar-header">
+            <button id="cal-prev" class="icon-btn" type="button" aria-label="Previous month">◀</button>
+            <div class="calendar-title-wrap">
+              <div id="cal-month" class="calendar-month">MONTH</div>
+              <button id="cal-today" class="link-btn" type="button">TODAY</button>
+            </div>
+            <button id="cal-next" class="icon-btn" type="button" aria-label="Next month">▶</button>
+          </div>
+          <div class="calendar-weekdays" aria-hidden="true">
+            <span>SUN</span><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span>
+          </div>
+          <div id="calendar-grid" class="calendar-grid" role="grid" aria-label="Monthly calendar"></div>
+          <p class="calendar-hint">Select a date to filter and view agenda.</p>
+        </section>
+
+        <section class="agenda" aria-label="Day agenda">
+          <div class="agenda-header">
+            <h3 class="overview-title">Day Agenda</h3>
+            <span id="agenda-date-label" class="agenda-date-label">No date selected</span>
+          </div>
+          <div id="agenda-content" class="agenda-content">
+            <p class="agenda-empty">Select a calendar date to inspect assigned directives.</p>
+          </div>
+        </section>
+
+        <section class="overview" aria-label="Overview">
+          <h3 class="overview-title">Operational Summary</h3>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span class="stat-label">Total</span>
+              <strong id="stat-total" class="stat-value">0</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Active</span>
+              <strong id="stat-active" class="stat-value">0</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Completed</span>
+              <strong id="stat-completed" class="stat-value">0</strong>
+            </div>
+            <div class="stat-card">
+              <span class="stat-label">Overdue</span>
+              <strong id="stat-overdue" class="stat-value">0</strong>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <footer class="app-footer">
+      <span>Bunker Network Sync: LOCAL</span>
+      <span>Project YoRHa // Ver. 2.1</span>
+    </footer>
+  </div>
+
+  <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+  <template id="task-template">
+    <li class="task-item" data-id="">
+      <label class="task-check">
+        <input type="checkbox" class="task-toggle" />
+        <span class="checkmark" aria-hidden="true"></span>
+      </label>
+      <div class="task-body">
+        <div class="task-view">
+          <div class="task-main-row">
+            <p class="task-text"></p>
+            <div class="task-actions">
+              <button class="icon-action task-edit" type="button" title="Edit directive" aria-label="Edit directive">EDIT</button>
+              <button class="icon-action danger task-delete" type="button" title="Delete directive" aria-label="Delete directive">DEL</button>
+            </div>
+          </div>
+          <div class="task-badges"></div>
+          <div class="task-meta-row">
+            <span class="task-date"></span>
+            <span class="subtask-progress-text"></span>
+          </div>
+          <div class="subtask-progress-wrap" aria-hidden="true">
+            <div class="subtask-progress-bar"><span class="subtask-progress-fill"></span></div>
+          </div>
+        </div>
+
+        <form class="task-edit-form" hidden>
+          <div class="edit-grid">
+            <input class="edit-text" type="text" maxlength="140" aria-label="Edit task text" required />
+            <input class="edit-due" type="date" aria-label="Edit due date" />
+          </div>
+          <div class="quick-dates">
+            <button type="button" class="btn ghost small quick-date" data-q="today">TODAY</button>
+            <button type="button" class="btn ghost small quick-date" data-q="tomorrow">TOMORROW</button>
+            <button type="button" class="btn ghost small quick-date" data-q="nextweek">NEXT WEEK</button>
+            <button type="button" class="btn ghost small quick-date" data-q="clear">CLEAR DATE</button>
+          </div>
+          <div class="edit-actions">
+            <button type="submit" class="btn primary small">SAVE</button>
+            <button type="button" class="btn ghost small edit-cancel">CANCEL</button>
+          </div>
+        </form>
+
+        <div class="subtasks">
+          <ul class="subtask-list"></ul>
+          <form class="subtask-form">
+            <label class="sr-only">Add subtask</label>
+            <input class="subtask-input" type="text" maxlength="100" placeholder="Add sub-directive..." />
+            <button type="submit" class="btn ghost small">ADD</button>
+          </form>
+        </div>
+      </div>
+    </li>
+  </template>
+
+  <template id="subtask-template">
+    <li class="subtask-item" data-subtask-id="">
+      <label class="subtask-check">
+        <input type="checkbox" class="subtask-toggle" />
+        <span class="sub-checkmark" aria-hidden="true"></span>
+      </label>
+      <span class="subtask-text"></span>
+      <input class="subtask-edit-input" type="text" maxlength="100" hidden />
+      <div class="subtask-actions">
+        <button type="button" class="icon-action subtask-edit" aria-label="Edit subtask" title="Edit sub-directive">EDIT</button>
+        <button type="button" class="icon-action danger subtask-delete" aria-label="Delete subtask" title="Delete sub-directive">DEL</button>
+      </div>
+    </li>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>
